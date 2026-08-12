@@ -40,7 +40,7 @@ unrelated to this change -- documented in PR description.
 
 ### Check-in 2 (end of week)
 
-**PR link:** [ADD ONCE OPENED]
+**PR link:** https://github.com/ascherj/pathreview/pull/969
 
 **Branch:** feat/34-llm-chunk-reranker
 
@@ -69,5 +69,70 @@ unrelated to this change)  [x] make test-unit passes (53 pre-existing
 failures unrelated to this change; all 15 new tests pass, no
 regressions in the 390 previously-passing tests)
 
-**Draft PR feedback received from:** none -- compressed same-day
-timeline did not allow time for peer review before submission
+## Week 10 — Iteration & reflection
+
+### Reviewer feedback
+
+**Feedback received:** [— still awaiting review
+
+**Summary of feedback:**
+No review came in yet. 
+
+**How you responded:**
+N/A — no feedback received. If comments come in after submission, I'll
+follow up and document the response here.
+
+---
+
+### Reflection
+
+**What was harder than you expected?**
+Getting the local environment right was harder than the actual implementation.
+I kept running `pytest` and `python` from my base anaconda install instead of
+the project's `.venv`, which produced a confusing `ModuleNotFoundError` that
+had nothing to do with my code. It cost real time before I realized the fix
+was just activating `.venv`. I also didn't expect pre-commit hooks (ruff,
+black, mypy) to block commits repeatedly — black kept reformatting my files
+after I thought I was done, so I had to re-stage and recommit several times.
+
+**What did you learn about working in a large codebase?**
+The biggest thing was learning to distinguish "my bug" from "pre-existing
+issue." When `make test-unit` came back with 53 failures, my first instinct
+was that I'd broken something — but almost none of those failures touched
+the files I changed. I had to learn to verify scope (which files were
+actually affected) rather than assume every red test was mine to fix. I also
+had to match existing conventions (the `openai.OpenAI` client pattern from
+`review_generator.py`, the `Mock`/`patch` testing style from
+`test_batch_processor.py`) instead of inventing my own approach, which
+required actually reading code I didn't write before writing any of my own.
+
+**How did AI tools help — and where did they fall short?**
+AI was most useful for pattern-matching: once I showed it the existing
+`ReviewGenerator` class and an existing test file, it could follow those
+conventions closely for the new reranker code and tests, which saved a lot
+of time versus writing boilerplate from scratch. Where it fell short: it
+couldn't see my actual terminal state, so when a heredoc paste went wrong or
+a file ended up in the wrong place (I accidentally duplicated code into
+`rag/retriever/__init__.py` at one point), I had to be the one to notice
+something looked off and ask it to help me diagnose and fix it. AI also
+can't tell you what your instructor actually expects when a course doc is
+ambiguous (like where the "cohort ledger" lives) — I still had to make
+judgment calls there.
+
+**What would you do differently if you started over?**
+I'd activate the project's `.venv` and run `make check`/`make test-unit`
+once, immediately after cloning, before writing any code — that alone would
+have caught the environment issue on day one instead of mid-implementation.
+I'd also budget time across the week instead of compressing Week 9 into a
+single day; skipping the draft-PR-for-feedback step meant I lost the chance
+to catch issues before finalizing, which is exactly the step the module was
+trying to teach.
+
+**What are you most proud of from this module?**
+Getting the reranker to fail gracefully. Instead of letting a bad LLM
+response crash retrieval, I built in a fallback to the existing blended
+score, and wrote tests specifically for that failure path (LLM call
+errors, unparseable output, out-of-range scores). That's the kind of
+edge-case thinking I wouldn't have prioritized without slowing down enough
+to ask "what happens when this goes wrong," and it's the part of the PR I'd
+feel best defending to a reviewer.
